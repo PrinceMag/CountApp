@@ -4,6 +4,9 @@ from rest_framework import generics
 from .serializers import UserSerializer, NoteSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Note
+from django.shortcuts import render, get_object_or_404
+from rest_framework import generics, status
+from rest_framework.response import Response
 
 
 class NoteListCreate(generics.ListCreateAPIView):
@@ -21,6 +24,24 @@ class NoteListCreate(generics.ListCreateAPIView):
             print(serializer.errors)
 
 
+class NoteDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Note.objects.filter(author=user)
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class NoteDelete(generics.DestroyAPIView):
     serializer_class = NoteSerializer
     permission_classes = [IsAuthenticated]
@@ -29,7 +50,10 @@ class NoteDelete(generics.DestroyAPIView):
         user = self.request.user
         return Note.objects.filter(author=user)
     
+    
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    
