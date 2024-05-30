@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-import "../styles/Form.css"
+import "../styles/Form.css";
 import LoadingIndicator from "./LoadingIndicator";
 
 function Form({ route, method }) {
@@ -10,6 +10,7 @@ function Form({ route, method }) {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const name = method === "login" ? "Login" : "Register";
 
@@ -18,20 +19,23 @@ function Form({ route, method }) {
         e.preventDefault();
 
         try {
-            const res = await api.post(route, { username, password })
+            const res = await api.post(route, { username, password });
             if (method === "login") {
                 localStorage.setItem(ACCESS_TOKEN, res.data.access);
                 localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-                navigate("/")
+                navigate("/");
             } else {
-                navigate("/login")
+                navigate("/login");
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     };
+
+    const isLoginPage = location.pathname === "/login";
+    const isRegisterPage = location.pathname === "/register";
 
     return (
         <form onSubmit={handleSubmit} className="form-container">
@@ -54,8 +58,19 @@ function Form({ route, method }) {
             <button className="form-button" type="submit">
                 {name}
             </button>
+            
+            {isLoginPage && (
+                <p>
+                    Don't have an account? <Link to="/register">Register here</Link>.
+                </p>
+            )}
+            {isRegisterPage && (
+                <p>
+                    Already have an account? <Link to="/login">Login here</Link>.
+                </p>
+            )}
         </form>
     );
 }
 
-export default Form
+export default Form;
