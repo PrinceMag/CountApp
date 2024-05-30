@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Navigate,useNavigate  } from "react-router-dom";
 import api from '../api';
 import CreateNote from './CreateNote';
 import Note from './Note';
-import Header from './Header'; // Import Header component
+import Header from './Header';
 import './notes.css';
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 const Notes = () => {
     const [notes, setNotes] = useState([]);
@@ -12,10 +12,11 @@ const Notes = () => {
     const [titleText, setTitleText] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [editingNote, setEditingNote] = useState(null);
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         getNotes();
-    }, []);
+    }, [searchQuery]); // Update the effect to depend on searchQuery
 
     const getNotes = () => {
         if (!searchQuery) {
@@ -80,25 +81,23 @@ const Notes = () => {
     const startEditingNote = (note) => {
         console.log("Editing note:", note);
         setEditingNote(note);
-        setTitleText(note.title); // Update titleText state with the title of the note being edited
+        setTitleText(note.title);
         setInputText(note.content);
     };
 
-
-    function Logout() {
+    const handleLogout = () => {
         localStorage.clear();
-        return <Navigate to="/login" />;
-    }
+        navigate("/login"); // Redirect to login page
+    };
 
     return (
         <>
-            <Header handleSearch={(query) => setSearchQuery(query)} handleLogout={Logout} />
+            <Header handleSearch={(query) => setSearchQuery(query)} handleLogout={handleLogout} />
             <div className='notes'>
-                {/* Pass handleSearch function to Header */}
                 {editingNote === null && (
                     <CreateNote
                         titleText={titleText}
-                        setTitleText={setTitleText} // Change setTitle to setTitleText
+                        setTitleText={setTitleText}
                         inputText={inputText}
                         setInputText={setInputText}
                         saveHandler={createOrUpdateNote}
@@ -109,7 +108,7 @@ const Notes = () => {
                         <CreateNote
                             key={note.id}
                             titleText={titleText}
-                            setTitleText={setTitleText} // Change setTitle to setTitleText
+                            setTitleText={setTitleText}
                             inputText={inputText}
                             setInputText={setInputText}
                             saveHandler={createOrUpdateNote}
